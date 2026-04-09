@@ -22,11 +22,14 @@ import { TenantSwitcher } from "@/components/tenant-switcher";
 import { ArrowRight, FileText, Search, Sparkles, Loader2 } from "lucide-react";
 
 const AUTO_INGEST_URLS = [
+  "https://job-boards.greenhouse.io/figma/jobs/5711571004?gh_jid=5711571004",
+  "https://jobs.ashbyhq.com/notion/ff6129b1-5ed5-414d-ac0c-579e86e141d9",
+  "https://jobs.lever.co/marketer-hire/b7680247-12b8-43e9-90fb-27f0efa4d4ac",
   "https://jobs.ashbyhq.com/Linear/82778dbf-711e-4d23-9d49-4a60db76737a",
   "https://jobs.ashbyhq.com/Linear/3adaa1f5-2cf1-480d-8daf-92345ec08395",
-  "https://jobs.ashbyhq.com/Linear/453f1ba0-a35e-4ed2-8215-1514e0a30b92",
   "https://jobs.ashbyhq.com/Linear/c21af93e-210f-4969-8eaa-90fb16a5b720",
-  "https://jobs.ashbyhq.com/Linear/c3457e89-9ac2-4017-93d5-d1a7935782a0",
+  "https://job-boards.greenhouse.io/figma/jobs/5830640004?gh_jid=5830640004",
+  "https://jobs.lever.co/protolabs/7eeb766b-541a-4a36-ac42-583ea99c136c",
 ];
 
 type AppStatus = "NONE" | "APPLIED" | "INTERVIEWING" | "OFFER";
@@ -80,25 +83,26 @@ export default function PipelinePage() {
     // Auto-ingest logic
     if (tenantEmail && !autoIngestRef.current[tenantEmail]) {
       autoIngestRef.current[tenantEmail] = true;
+      
+      // ALWAYS show the interstitial for 5 seconds when the user opens the URL
+      setShowInterstitial(true);
+      const startTime = Date.now();
+      const duration = 5000;
+      
+      const interval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const p = Math.min(100, (elapsed / duration) * 100);
+        setProgress(p);
+        if (p >= 100) {
+          clearInterval(interval);
+          setShowInterstitial(false);
+        }
+      }, 50);
+
       const existing = new Set(data.jobs.map((j) => j.url));
       const missing = AUTO_INGEST_URLS.filter((u) => !existing.has(u));
 
       if (missing.length > 0) {
-        // Trigger Interstitial
-        setShowInterstitial(true);
-        const startTime = Date.now();
-        const duration = 5000;
-        
-        const interval = setInterval(() => {
-          const elapsed = Date.now() - startTime;
-          const p = Math.min(100, (elapsed / duration) * 100);
-          setProgress(p);
-          if (p >= 100) {
-            clearInterval(interval);
-            setShowInterstitial(false);
-          }
-        }, 50);
-
         setBusy(true);
         try {
           await apiFetch("/api/jobs/ingest", {
@@ -193,7 +197,7 @@ export default function PipelinePage() {
               AI is pulling all jobs for you...
             </h2>
             <p className="text-sm text-muted-foreground mb-8">
-              We are automatically ingesting 5 selected job URLs from Ashby. Evaluating fit in the background.
+              We are automatically ingesting selected job URLs. Evaluating fit in the background.
             </p>
 
             <div className="w-full h-2 bg-muted/50 rounded-full overflow-hidden border border-border/50">
