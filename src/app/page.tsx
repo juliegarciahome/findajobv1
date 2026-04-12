@@ -105,7 +105,7 @@ export default function Home() {
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold">1</div>
                 <div>
                   <h4 className="font-medium text-foreground">Configure your tenant</h4>
-                  <p className="text-sm text-muted-foreground mt-1">Go to <Link href="/settings" className="text-primary hover:underline">Settings</Link> to set your email, paste your base markdown resume, and add your API keys.</p>
+                  <p className="text-sm text-muted-foreground mt-1">Go to <Link href="/settings" className="text-primary hover:underline">Settings</Link> to set your email and paste your base markdown resume.</p>
                 </div>
               </div>
               <div className="flex gap-4">

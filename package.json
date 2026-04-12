@@ -6,12 +6,16 @@
                     "dev:db":  "npx prisma dev start career_portal -d",
                     "build":  "next build",
                     "start":  "next start",
+                    "start:3005":  "next start -p 3005",
                     "dev:worker":  "tsx src/lib/workers/ingest-worker.ts",
                     "lint":  "eslint",
                     "predev:all":  "npm run dev:db",
                     "dev:all":  "concurrently -n web,worker -c cyan,magenta \"npm:dev:web\" \"npm:dev:worker\"",
                     "dev:web":  "next dev -p 3005",
-                    "dev":  "next dev -p 3005"
+                    "dev":  "next dev -p 3005",
+                    "docker:build":  "docker build -t findmejob-ai .",
+                    "docker:up":  "docker compose up -d --build",
+                    "docker:up:tunnel":  "docker compose --profile tunnel up -d --build"
                 },
     "dependencies":  {
                          "@anthropic-ai/sdk":  "^0.86.1",

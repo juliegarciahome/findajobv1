@@ -4,5 +4,9 @@ export async function apiFetch(input: RequestInfo | URL, init?: RequestInit & { 
   const tenantEmail = init?.tenantEmail;
   const headers = new Headers(init?.headers);
   if (tenantEmail) headers.set("x-user-email", tenantEmail);
-  return fetch(input, { ...init, headers });
+  return fetch(input, {
+    ...init,
+    headers,
+    cache: init?.cache ?? "no-store",
+  });
 }

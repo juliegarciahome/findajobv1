@@ -54,8 +54,10 @@ export async function processIngestJob(payload: {
     try {
       const html = await scrapeHtml(url);
 
-      const googleKey = user.googleApiKey || env.GOOGLE_AI_API_KEY;
-      const extracted = await googleStudioExtractFromHtml({ apiKey: googleKey, html });
+      const extracted = await googleStudioExtractFromHtml({
+        apiKey: env.GOOGLE_AI_API_KEY,
+        html,
+      });
 
       const updatedJob = await prisma.jobListing.update({
         where: { id: job.id },
@@ -68,9 +70,8 @@ export async function processIngestJob(payload: {
         },
       });
 
-      const claudeKey = user.claudeApiKey || env.ANTHROPIC_API_KEY;
       const evalBlocks = await evaluateJobWithClaude({
-        apiKey: claudeKey,
+        apiKey: env.ANTHROPIC_API_KEY,
         profile: {
           fullName: profile.fullName,
           location: profile.location,

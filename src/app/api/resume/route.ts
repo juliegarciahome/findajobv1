@@ -1,7 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getTenantEmail } from "@/lib/tenant";
+import { jsonNoStore } from "@/lib/api-response";
 import { z } from "zod";
+
+export const dynamic = "force-dynamic";
 
 const schema = z.object({
   rawMarkdown: z.string(),
@@ -75,7 +78,7 @@ export async function GET(req: NextRequest) {
     create: { userId: user.id, rawMarkdown: DEFAULT_RESUME },
   });
 
-  return NextResponse.json(resume);
+  return jsonNoStore(resume);
 }
 
 export async function POST(req: NextRequest) {
@@ -93,5 +96,5 @@ export async function POST(req: NextRequest) {
     create: { userId: user.id, rawMarkdown: body.rawMarkdown },
   });
 
-  return NextResponse.json(resume);
+  return jsonNoStore(resume);
 }

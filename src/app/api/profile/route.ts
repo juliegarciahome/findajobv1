@@ -1,14 +1,17 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getTenantEmail } from "@/lib/tenant";
+import { jsonNoStore } from "@/lib/api-response";
 import { z } from "zod";
 
+export const dynamic = "force-dynamic";
+
 const schema = z.object({
-  fullName: z.string().optional(),
-  location: z.string().optional(),
-  targetRoles: z.array(z.string()).optional(),
-  narrativeHeadline: z.string().optional(),
-  compTarget: z.string().optional(),
+  fullName: z.string().nullish(),
+  location: z.string().nullish(),
+  targetRoles: z.array(z.string()).nullish(),
+  narrativeHeadline: z.string().nullish(),
+  compTarget: z.string().nullish(),
 });
 
 export async function GET(req: NextRequest) {
@@ -25,7 +28,7 @@ export async function GET(req: NextRequest) {
     create: { userId: user.id, targetRoles: [] },
   });
 
-  return NextResponse.json(profile);
+  return jsonNoStore(profile);
 }
 
 export async function POST(req: NextRequest) {
@@ -40,11 +43,15 @@ export async function POST(req: NextRequest) {
   const profile = await prisma.profile.upsert({
     where: { userId: user.id },
     update: {
-      fullName: body.fullName ?? undefined,
-      location: body.location ?? undefined,
-      targetRoles: body.targetRoles ?? undefined,
-      narrativeHeadline: body.narrativeHeadline ?? undefined,
-      compTarget: body.compTarget ?? undefined,
+      ...(body.fullName !== undefined ? { fullName: body.fullName } : {}),
+      ...(body.location !== undefined ? { location: body.location } : {}),
+      ...(body.targetRoles !== undefined
+        ? { targetRoles: body.targetRoles ?? [] }
+        : {}),
+      ...(body.narrativeHeadline !== undefined
+        ? { narrativeHeadline: body.narrativeHeadline }
+        : {}),
+      ...(body.compTarget !== undefined ? { compTarget: body.compTarget } : {}),
     },
     create: {
       userId: user.id,
@@ -56,5 +63,5 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  return NextResponse.json(profile);
+  return jsonNoStore(profile);
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { useTenantEmail } from "@/lib/client-tenant";
 import { TenantSwitcher } from "@/components/tenant-switcher";
@@ -20,8 +20,6 @@ type Profile = {
 
 type Resume = { rawMarkdown: string };
 
-type Settings = { googleApiKey: string | null; claudeApiKey: string | null };
-
 export default function SettingsPage() {
   const { tenantEmail, setTenantEmail } = useTenantEmail();
   const [profile, setProfile] = useState<Profile>({
@@ -32,26 +30,37 @@ export default function SettingsPage() {
     compTarget: null,
   });
   const [resume, setResume] = useState<Resume>({ rawMarkdown: "" });
-  const [keys, setKeys] = useState<Settings>({ googleApiKey: null, claudeApiKey: null });
   const [busy, setBusy] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const loadData = useCallback(async () => {
+    const [pRes, rRes] = await Promise.all([
+      apiFetch("/api/profile", { tenantEmail }),
+      apiFetch("/api/resume", { tenantEmail }),
+    ]);
+    if (!pRes.ok) {
+      throw new Error(`Profile load failed (${pRes.status})`);
+    }
+    if (!rRes.ok) {
+      throw new Error(`Resume load failed (${rRes.status})`);
+    }
+    const [p, r] = await Promise.all([pRes.json(), rRes.json()]);
+    setProfile(p as Profile);
+    setResume(r as Resume);
+  }, [tenantEmail]);
 
   useEffect(() => {
-    void (async () => {
-      const [p, r, s] = await Promise.all([
-        apiFetch("/api/profile", { tenantEmail }).then((x) => x.json()),
-        apiFetch("/api/resume", { tenantEmail }).then((x) => x.json()),
-        apiFetch("/api/settings", { tenantEmail }).then((x) => x.json()),
-      ]);
-      setProfile(p as Profile);
-      setResume(r as Resume);
-      setKeys(s as Settings);
-    })();
-  }, [tenantEmail]);
+    setSaveError(null);
+    void loadData().catch((e: unknown) => {
+      setSaveError(e instanceof Error ? e.message : "Failed to load settings");
+    });
+  }, [loadData]);
 
   async function save() {
     setBusy(true);
+    setSaveError(null);
     try {
-      await Promise.all([
+      const [pRes, rRes] = await Promise.all([
         apiFetch("/api/profile", {
           tenantEmail,
           method: "POST",
@@ -67,13 +76,24 @@ export default function SettingsPage() {
           headers: { "content-type": "application/json" },
           body: JSON.stringify(resume),
         }),
-        apiFetch("/api/settings", {
-          tenantEmail,
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(keys),
-        }),
       ]);
+      if (!pRes.ok) {
+        const t = await pRes.text();
+        throw new Error(
+          `Profile save failed (${pRes.status})${t ? `: ${t.slice(0, 200)}` : ""}`,
+        );
+      }
+      if (!rRes.ok) {
+        const t = await rRes.text();
+        throw new Error(
+          `Resume save failed (${rRes.status})${t ? `: ${t.slice(0, 200)}` : ""}`,
+        );
+      }
+      const [p, r] = await Promise.all([pRes.json(), rRes.json()]);
+      setProfile(p as Profile);
+      setResume(r as Resume);
+    } catch (e: unknown) {
+      setSaveError(e instanceof Error ? e.message : "Save failed");
     } finally {
       setBusy(false);
     }
@@ -82,11 +102,17 @@ export default function SettingsPage() {
   return (
     <AppShell
       title="Settings"
-      description="Profile, resume, and API keys for this tenant."
+      description="Profile and resume for this tenant. AI keys are configured on the server."
+      backLink={{ href: "/dashboard", label: "Back to dashboard" }}
       right={<TenantSwitcher tenantEmail={tenantEmail} setTenantEmail={setTenantEmail} />}
     >
       <div className="space-y-6">
-        <div className="flex justify-end">
+        <div className="flex flex-col items-end gap-2">
+          {saveError ? (
+            <p className="text-sm text-destructive max-w-prose text-right" role="alert">
+              {saveError}
+            </p>
+          ) : null}
           <Button onClick={() => void save()} disabled={busy}>
             {busy ? "Saving…" : "Save"}
           </Button>
@@ -146,24 +172,6 @@ export default function SettingsPage() {
               onChange={(e) => setResume({ rawMarkdown: e.target.value })}
               className="min-h-64"
               placeholder="Paste your base resume markdown here"
-            />
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-2xl">
-          <CardHeader>
-            <CardTitle>API Keys (per tenant)</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-3 md:grid-cols-2">
-            <Input
-              placeholder="Google AI Studio key"
-              value={keys.googleApiKey ?? ""}
-              onChange={(e) => setKeys({ ...keys, googleApiKey: e.target.value })}
-            />
-            <Input
-              placeholder="Anthropic API key"
-              value={keys.claudeApiKey ?? ""}
-              onChange={(e) => setKeys({ ...keys, claudeApiKey: e.target.value })}
             />
           </CardContent>
         </Card>

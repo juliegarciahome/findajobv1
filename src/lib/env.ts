@@ -5,7 +5,7 @@ const envSchema = z.object({
   REDIS_URL: z.string().default("redis://localhost:6379"),
   GOOGLE_AI_API_KEY: z.string().optional().default(""),
   ANTHROPIC_API_KEY: z.string().optional().default(""),
-  NEXT_PUBLIC_APP_URL: z.string().optional().default("http://localhost:3000"),
+  NEXT_PUBLIC_APP_URL: z.string().optional().default("http://localhost:3005"),
 });
 
 export const env = envSchema.parse({

@@ -22,7 +22,9 @@ async function startWorker() {
   } catch {
     setInterval(() => void 0, 60_000);
     return;
-  }  console.log("Worker starting on job-ingest queue");  new Worker(
+  }
+  console.log("Worker starting on job-ingest queue");
+  new Worker(
     "job-ingest",
     async (job) => {
       await processIngestJob(job.data);

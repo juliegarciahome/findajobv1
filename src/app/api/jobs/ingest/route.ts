@@ -32,10 +32,19 @@ export async function POST(req: NextRequest) {
 
   const enq = await enqueueIngest({ userEmail: email, urls: body.urls });
 
-  if (!enq.queued) {
-    await processIngestJob({ userEmail: email, urls: body.urls });
-    return NextResponse.json({ ok: true, mode: "inline", queued: false, reason: enq.reason });
+  if (enq.queued) {
+    return NextResponse.json({ ok: true, mode: "queued", queued: true });
   }
 
-  return NextResponse.json({ ok: true, mode: "queued", queued: true });
+  // Run scraper + AI in the background so the HTTP request returns quickly (no gateway timeout).
+  void processIngestJob({ userEmail: email, urls: body.urls }).catch((err) => {
+    console.error("[ingest] processIngestJob failed", err);
+  });
+
+  return NextResponse.json({
+    ok: true,
+    mode: "inline-async",
+    queued: false,
+    reason: enq.reason,
+  });
 }

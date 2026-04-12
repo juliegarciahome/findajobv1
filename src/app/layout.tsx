@@ -8,6 +8,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://findmejob.ai"),
   title: "Findmejob.ai",
   description: "Ingest job URLs, evaluate with AI, and track your pipeline.",
   applicationName: "Findmejob.ai",

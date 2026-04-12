@@ -1,0 +1,10 @@
+---
+description: Execute recommended operational steps without delegating to the user
+alwaysApply: true
+---
+
+# Autonomous execution (this project)
+
+- When a task implies verification or deployment (Docker, `npm run build`, tunnel stack, smoke tests), **run the commands in the environment** and report results. Do not end with “you should run X” unless a secret or manual UI step is strictly required (e.g. pasting a token only the human has).
+- After meaningful app or infra changes affecting production, default to **`npm run docker:up:tunnel`** (or equivalent) when this repo uses Docker + Cloudflare tunnel, then briefly verify (e.g. local HTTP 200, key containers up).
+- Prefer **doing** over **instructing** for: installs, builds, linters, tests, compose up, and read-only diagnostics.

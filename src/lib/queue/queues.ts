@@ -42,6 +42,11 @@ export async function enqueueIngest(payload: JobIngestPayload): Promise<{
   queued: boolean;
   reason?: string;
 }> {
+  // Docker / single-process deploy: run ingest in the web process (see /api/jobs/ingest).
+  // Set USE_BULLMQ_INGEST=true only when a separate worker runs `npm run dev:worker`.
+  if (process.env.USE_BULLMQ_INGEST !== "true") {
+    return { queued: false, reason: "USE_BULLMQ_INGEST not enabled" };
+  }
   try {
     const q = getIngestQueue();
     await q.add("ingest", payload);

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -72,6 +71,16 @@ export default function PipelinePage() {
   const [progress, setProgress] = useState(0);
 
   const autoIngestRef = useRef<Record<string, boolean>>({});
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+    };
+  }, []);
 
   async function refresh() {
     setError(null);
@@ -88,13 +97,20 @@ export default function PipelinePage() {
       setShowInterstitial(true);
       const startTime = Date.now();
       const duration = 5000;
-      
-      const interval = setInterval(() => {
+
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      progressIntervalRef.current = setInterval(() => {
         const elapsed = Date.now() - startTime;
         const p = Math.min(100, (elapsed / duration) * 100);
         setProgress(p);
         if (p >= 100) {
-          clearInterval(interval);
+          if (progressIntervalRef.current) {
+            clearInterval(progressIntervalRef.current);
+            progressIntervalRef.current = null;
+          }
           setShowInterstitial(false);
         }
       }, 50);
@@ -105,13 +121,18 @@ export default function PipelinePage() {
       if (missing.length > 0) {
         setBusy(true);
         try {
-          await apiFetch("/api/jobs/ingest", {
-            tenantEmail,
+          const baseUrl = window.location.origin; // Force absolute URL to fix Next.js navigation bugs
+          await fetch(`${baseUrl}/api/jobs/ingest`, {
             method: "POST",
-            headers: { "content-type": "application/json" },
+            headers: { 
+              "content-type": "application/json",
+              "x-user-email": tenantEmail 
+            },
             body: JSON.stringify({ urls: missing }),
           });
-          const res2 = await apiFetch("/api/jobs", { tenantEmail });
+          const res2 = await fetch(`${baseUrl}/api/jobs`, {
+            headers: { "x-user-email": tenantEmail }
+          });
           if (res2.ok) {
             setJobs(((await res2.json()) as { jobs: Job[] }).jobs);
           }

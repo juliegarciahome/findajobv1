@@ -32,6 +32,43 @@
       timeout: 3s
       retries: 20
 
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3005}
+    container_name: career_portal_web
+    restart: unless-stopped
+    ports:
+      - "3005:3005"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/career_portal
+      REDIS_URL: redis://redis:6379
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3005}
+      GOOGLE_AI_API_KEY: ${GOOGLE_AI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      # No separate BullMQ worker in this compose file — ingest runs inside the web process.
+      USE_BULLMQ_INGEST: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Restores https://findmejob.ai when the tunnel token is set in .env (see README).
+  cloudflared:
+    profiles: ["tunnel"]
+    image: cloudflare/cloudflared:latest
+    container_name: career_portal_cloudflared
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      # Prefer CLOUDFLARE_TUNNEL_TOKEN (README); fall back to TUNNEL_TOKEN (Cloudflare dashboard name)
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-${TUNNEL_TOKEN:-}}
+    depends_on:
+      - web
+
 volumes:
   postgres_data:
   redis_data:

@@ -30,7 +30,7 @@ export async function evaluateJobWithClaude(opts: {
     return {
       blockASummary: "Claude key missing; evaluation stubbed.",
       blockBMatch:
-        "Provide ANTHROPIC_API_KEY or user-level claudeApiKey to enable.",
+        "Set ANTHROPIC_API_KEY in the server environment to enable Claude evaluation.",
       matchScore: 0,
     };
   }

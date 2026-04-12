@@ -1,9 +1,11 @@
 import Link from "next/link";
-import { Briefcase, ClipboardList, Sparkles } from "lucide-react";
+import { ArrowLeft, ClipboardList, Sparkles } from "lucide-react";
 
 export function AppShell(props: {
   title: string;
   description?: string;
+  /** e.g. back to dashboard from Settings */
+  backLink?: { href: string; label: string };
   right?: React.ReactNode;
   children: React.ReactNode;
 }) {
@@ -55,6 +57,15 @@ export function AppShell(props: {
         <div className="mb-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
+              {props.backLink ? (
+                <Link
+                  href={props.backLink.href}
+                  className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-3"
+                >
+                  <ArrowLeft className="w-4 h-4 shrink-0" aria-hidden />
+                  {props.backLink.label}
+                </Link>
+              ) : null}
               <h1 className="text-3xl font-extrabold tracking-tight text-foreground">{props.title}</h1>
               {props.description ? (
                 <p className="mt-2 text-sm text-muted-foreground max-w-2xl">{props.description}</p>
