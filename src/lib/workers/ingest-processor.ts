@@ -45,10 +45,25 @@ export async function processIngestJob(payload: {
   });
 
   for (const url of payload.urls) {
+    // Ensure the row exists (API route should have created it, but guard here too).
+    // Do NOT reset status to SCRAPING on update — that would clobber progress if
+    // a parallel/retry call races with an already-running scrape.
     const job = await prisma.jobListing.upsert({
       where: { userId_url: { userId: user.id, url } },
-      update: { status: "SCRAPING" },
+      update: {},
       create: { userId: user.id, url, status: "SCRAPING" },
+    });
+
+    // Skip URLs that are already fully processed
+    if (job.status === "EVALUATED" || job.status === "EVALUATING") {
+      console.log(`[ingest] skipping ${url} — already ${job.status}`);
+      continue;
+    }
+
+    // Mark as SCRAPING now that we're actively working on it
+    await prisma.jobListing.update({
+      where: { id: job.id },
+      data: { status: "SCRAPING" },
     });
 
     try {

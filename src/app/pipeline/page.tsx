@@ -73,6 +73,28 @@ export default function PipelinePage() {
   const autoIngestRef = useRef<Record<string, boolean>>({});
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  async function retryStuck() {
+    setError(null);
+    const stuckUrls = jobs
+      .filter((j) => j.status === "SCRAPING" || j.status === "ERROR")
+      .map((j) => j.url);
+    if (stuckUrls.length === 0) return;
+    setBusy(true);
+    try {
+      await apiFetch("/api/jobs/ingest", {
+        tenantEmail,
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ urls: stuckUrls }),
+      });
+      await refresh();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   useEffect(() => {
     return () => {
       if (progressIntervalRef.current) {
@@ -92,46 +114,51 @@ export default function PipelinePage() {
     // Auto-ingest logic
     if (tenantEmail && !autoIngestRef.current[tenantEmail]) {
       autoIngestRef.current[tenantEmail] = true;
-      
-      // ALWAYS show the interstitial for 5 seconds when the user opens the URL
-      setShowInterstitial(true);
-      const startTime = Date.now();
-      const duration = 5000;
 
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-        progressIntervalRef.current = null;
-      }
-      progressIntervalRef.current = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        const p = Math.min(100, (elapsed / duration) * 100);
-        setProgress(p);
-        if (p >= 100) {
-          if (progressIntervalRef.current) {
-            clearInterval(progressIntervalRef.current);
-            progressIntervalRef.current = null;
-          }
-          setShowInterstitial(false);
-        }
-      }, 50);
-
-      const existing = new Set(data.jobs.map((j) => j.url));
-      const missing = AUTO_INGEST_URLS.filter((u) => !existing.has(u));
+      // Re-trigger URLs that are new OR stuck in SCRAPING/ERROR from a previous session
+      const STUCK_STATUSES = new Set(["SCRAPING", "ERROR"]);
+      const existingByUrl = new Map(data.jobs.map((j) => [j.url, j]));
+      const missing = AUTO_INGEST_URLS.filter((u) => {
+        const job = existingByUrl.get(u);
+        return !job || STUCK_STATUSES.has(job.status);
+      });
 
       if (missing.length > 0) {
+        // Show interstitial while ingest + background scraping is kicking off
+        setShowInterstitial(true);
+        const startTime = Date.now();
+        const duration = 5000;
+
+        if (progressIntervalRef.current) {
+          clearInterval(progressIntervalRef.current);
+          progressIntervalRef.current = null;
+        }
+        progressIntervalRef.current = setInterval(() => {
+          const elapsed = Date.now() - startTime;
+          const p = Math.min(100, (elapsed / duration) * 100);
+          setProgress(p);
+          if (p >= 100) {
+            if (progressIntervalRef.current) {
+              clearInterval(progressIntervalRef.current);
+              progressIntervalRef.current = null;
+            }
+            setShowInterstitial(false);
+          }
+        }, 50);
+
         setBusy(true);
         try {
-          const baseUrl = window.location.origin; // Force absolute URL to fix Next.js navigation bugs
+          const baseUrl = window.location.origin;
           await fetch(`${baseUrl}/api/jobs/ingest`, {
             method: "POST",
-            headers: { 
+            headers: {
               "content-type": "application/json",
-              "x-user-email": tenantEmail 
+              "x-user-email": tenantEmail,
             },
             body: JSON.stringify({ urls: missing }),
           });
           const res2 = await fetch(`${baseUrl}/api/jobs`, {
-            headers: { "x-user-email": tenantEmail }
+            headers: { "x-user-email": tenantEmail },
           });
           if (res2.ok) {
             setJobs(((await res2.json()) as { jobs: Job[] }).jobs);
@@ -259,8 +286,8 @@ export default function PipelinePage() {
                 />
               </div>
               <div className="flex gap-2">
-                <Button 
-                  onClick={() => void ingest()} 
+                <Button
+                  onClick={() => void ingest()}
                   disabled={busy || showInterstitial}
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_15px_-3px_oklch(0.68_0.18_260)] hover:shadow-[0_0_20px_-3px_oklch(0.68_0.18_260)] transition-all rounded-xl"
                 >
@@ -270,6 +297,17 @@ export default function PipelinePage() {
                   Refresh
                 </Button>
               </div>
+              {jobs.some((j) => j.status === "SCRAPING" || j.status === "ERROR") && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void retryStuck()}
+                  disabled={busy}
+                  className="w-full rounded-xl border-amber-500/30 text-amber-500 hover:bg-amber-500/10 bg-background/50"
+                >
+                  Retry stuck jobs ({jobs.filter((j) => j.status === "SCRAPING" || j.status === "ERROR").length})
+                </Button>
+              )}
               <div className="text-xs text-muted-foreground">
                 Tip: Jobs appear in the table immediately. Evaluation continues in the background.
               </div>
