@@ -31,7 +31,7 @@ const AUTO_INGEST_URLS = [
   "https://jobs.lever.co/protolabs/7eeb766b-541a-4a36-ac42-583ea99c136c",
 ];
 
-type AppStatus = "NONE" | "APPLIED" | "INTERVIEWING" | "OFFER";
+type AppStatus = "NONE" | "APPLIED" | "RESPONDED" | "INTERVIEWING" | "OFFER" | "REJECTED" | "DISCARDED" | "SKIP";
 
 type Job = {
   id: string;
@@ -41,20 +41,34 @@ type Job = {
   status: string;
   appStatus?: AppStatus | null;
   matchScore: number | null;
+  archetypeDetected?: string | null;
   updatedAt: string;
-  evaluation?: { generatedPdfPath?: string | null } | null;
+  evaluation?: { generatedPdfPath?: string | null; legitimacyTier?: string | null } | null;
 };
 
 function appStatusLabel(s: AppStatus | null | undefined) {
   switch (s ?? "NONE") {
-    case "APPLIED":
-      return "Applied";
-    case "INTERVIEWING":
-      return "Interviewing";
-    case "OFFER":
-      return "Offer";
-    default:
-      return "Not yet";
+    case "APPLIED": return "Applied";
+    case "RESPONDED": return "Responded";
+    case "INTERVIEWING": return "Interviewing";
+    case "OFFER": return "Offer";
+    case "REJECTED": return "Rejected";
+    case "DISCARDED": return "Discarded";
+    case "SKIP": return "Skip";
+    default: return "Not yet";
+  }
+}
+
+function appStatusColor(s: AppStatus | null | undefined) {
+  switch (s ?? "NONE") {
+    case "APPLIED": return "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-200";
+    case "RESPONDED": return "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-200";
+    case "INTERVIEWING": return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-200";
+    case "OFFER": return "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-200";
+    case "REJECTED": return "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-200";
+    case "DISCARDED":
+    case "SKIP": return "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400";
+    default: return "bg-muted text-muted-foreground";
   }
 }
 
@@ -367,12 +381,9 @@ export default function PipelinePage() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <Badge 
-                              variant={(j.appStatus ?? "NONE") === "NONE" ? "outline" : "secondary"}
-                              className={(j.appStatus ?? "NONE") !== "NONE" ? "bg-green-500/20 text-green-500 border-green-500/30" : "border-border/50 text-muted-foreground"}
-                            >
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${appStatusColor(j.appStatus)}`}>
                               {appStatusLabel(j.appStatus)}
-                            </Badge>
+                            </span>
                           </TableCell>
                           <TableCell className="text-right font-medium">
                             <span className={j.matchScore && j.matchScore > 70 ? "text-primary text-glow" : "text-muted-foreground"}>

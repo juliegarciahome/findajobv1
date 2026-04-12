@@ -13,14 +13,14 @@ model User {
   id           String   @id @default(cuid())
   email        String   @unique
   password     String?
-  googleApiKey String?
-  claudeApiKey String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   profile     Profile?
   baseResume  BaseResume?
   jobListings JobListing[]
+  storyBank   StoryBank[]
+  followUps   FollowUp[]
 }
 
 model Profile {
@@ -31,6 +31,16 @@ model Profile {
   targetRoles       String[] @default([])
   narrativeHeadline String?
   compTarget        String?
+  // Extended profile fields
+  linkedinUrl       String?
+  portfolioUrl      String?
+  githubUrl         String?
+  exitStory         String?
+  superpowers       String[] @default([])
+  proofPoints       Json?    // [{name, url, heroMetric}]
+  archetypes        Json?    // [{name, level, fit: "primary"|"secondary"|"adjacent"}]
+  compensationMin   String?
+  visaStatus        String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -48,37 +58,102 @@ model BaseResume {
 }
 
 model JobListing {
-  id         String   @id @default(cuid())
-  userId     String
-  url        String
-  company    String?
-  role       String?
-  rawJd      String?
-  source     String?
-  status     String   @default("NEW")
-  appStatus  String   @default("NONE")
-  matchScore Float?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id                String   @id @default(cuid())
+  userId            String
+  url               String
+  company           String?
+  role              String?
+  rawJd             String?
+  source            String?
+  status            String   @default("NEW")
+  appStatus         String   @default("NONE")
+  matchScore        Float?
+  archetypeDetected String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  evaluation Evaluation?
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  evaluation    Evaluation?
+  interviewPrep InterviewPrep?
+  followUps     FollowUp[]
+  storyBank     StoryBank[]
 
   @@unique([userId, url])
   @@index([userId, status])
 }
 
 model Evaluation {
-  id                  String   @id @default(cuid())
-  jobId               String   @unique
-  blockASummary       String?
-  blockBMatch         String?
-  blockCStrategy      String?
-  blockDComp          String?
-  blockFInterviewPrep String?
-  generatedPdfPath    String?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                   String   @id @default(cuid())
+  jobId                String   @unique
+  blockASummary        String?
+  blockBMatch          String?
+  blockCStrategy       String?
+  blockDComp           String?
+  blockEPersonalization String?
+  blockFInterviewPrep  String?
+  blockGLegitimacy     String?
+  legitimacyTier       String?  // "High Confidence" | "Proceed with Caution" | "Suspicious"
+  sectionHDraftAnswers String?
+  extractedKeywords    String[] @default([])
+  archetype            String?
+  scoreDimensions      Json?    // {northStar, cvMatch, level, comp, growth, remote, reputation, techStack, speed, culture}
+  overallScore         Float?   // 1-5 weighted from scoreDimensions
+  generatedPdfPath     String?
+  tailoredCvPath       String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
   job JobListing @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
+model StoryBank {
+  id         String   @id @default(cuid())
+  userId     String
+  jobId      String?
+  title      String
+  situation  String
+  task       String
+  action     String
+  result     String
+  reflection String
+  tags       String[] @default([])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  JobListing? @relation(fields: [jobId], references: [id], onDelete: SetNull)
+}
+
+model InterviewPrep {
+  id              String   @id @default(cuid())
+  jobId           String   @unique
+  company         String
+  role            String
+  processOverview String?
+  likelyQuestions String?
+  storyGapMap     String?
+  techChecklist   String?
+  companySignals  String?
+  rawReport       String?
+  researchedAt    DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  job JobListing @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
+model FollowUp {
+  id          String   @id @default(cuid())
+  userId      String
+  jobId       String
+  sentAt      DateTime?
+  channel     String   @default("Email")
+  contactName String?
+  notes       String?
+  draftText   String?
+  followupNum Int      @default(1)
+  sent        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  JobListing @relation(fields: [jobId], references: [id], onDelete: Cascade)
 }

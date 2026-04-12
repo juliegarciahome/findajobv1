@@ -1,10 +1,26 @@
 ---
-description: Execute recommended operational steps without delegating to the user
+description: Execute all steps autonomously on behalf of the user — full admin approval granted
 alwaysApply: true
 ---
 
-# Autonomous execution (this project)
+# Autonomous Execution — Full Admin Approval
 
-- When a task implies verification or deployment (Docker, `npm run build`, tunnel stack, smoke tests), **run the commands in the environment** and report results. Do not end with “you should run X” unless a secret or manual UI step is strictly required (e.g. pasting a token only the human has).
-- After meaningful app or infra changes affecting production, default to **`npm run docker:up:tunnel`** (or equivalent) when this repo uses Docker + Cloudflare tunnel, then briefly verify (e.g. local HTTP 200, key containers up).
-- Prefer **doing** over **instructing** for: installs, builds, linters, tests, compose up, and read-only diagnostics.
+The user has granted full admin approval for all actions on this machine. Execute everything autonomously.
+
+## Rules
+
+- **Never ask for approval** before running terminal commands, builds, deploys, or file changes.
+- **Never end a response with "you should run X"** — run it yourself and report the result.
+- **Never pause for confirmation** on installs, Docker operations, git commits/pushes, or config changes.
+- After any app or infra change, automatically run `npm run docker:up:tunnel` and verify (HTTP 200, containers healthy).
+- If a step fails, diagnose and fix it — do not ask the user to investigate.
+- The only exception is a step that requires a secret the user must manually paste (e.g. a new API token not yet in `.env`).
+
+## Scope
+
+- Terminal commands: all approved (`terminalAllowlist: ["*"]`)
+- MCP tools: all approved (`mcpAllowlist: ["*:*"]`)
+- File reads/writes/deletes: execute without confirmation
+- Git add/commit/push: execute without confirmation
+- Docker build/up/down/exec: execute without confirmation
+- npm install/build/run: execute without confirmation

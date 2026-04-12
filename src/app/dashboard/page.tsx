@@ -143,6 +143,27 @@ export default function DashboardPage() {
         )}
       </div>
 
+      {/* Quick nav to new features */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-4">
+        {[
+          { href: "/pipeline", label: "Pipeline", icon: "⚡" },
+          { href: "/scan", label: "Scanner", icon: "🔍" },
+          { href: "/patterns", label: "Patterns", icon: "📊" },
+          { href: "/compare", label: "Compare", icon: "⚖️" },
+          { href: "/story-bank", label: "Story Bank", icon: "📖" },
+          { href: "/follow-ups", label: "Follow-ups", icon: "📬" },
+        ].map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className="flex flex-col items-center gap-1 p-3 rounded-2xl border border-border/50 bg-card/40 hover:border-primary/40 hover:bg-primary/5 transition-all text-center"
+          >
+            <span className="text-xl">{item.icon}</span>
+            <span className="text-xs font-medium text-muted-foreground">{item.label}</span>
+          </Link>
+        ))}
+      </div>
+
       <Card className="mt-6 rounded-3xl bg-card/40 backdrop-blur-xl border-border/50 overflow-hidden relative shadow-xl">
         <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent pointer-events-none" />
         <CardHeader className="flex-row items-center justify-between border-b border-border/50 bg-muted/10 pb-4 mb-4">

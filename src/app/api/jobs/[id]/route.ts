@@ -25,7 +25,7 @@ export async function GET(
 
   return NextResponse.json({ job });
 }
-const allowedAppStatuses = ["NONE", "APPLIED", "INTERVIEWING", "OFFER"] as const;
+const allowedAppStatuses = ["NONE", "APPLIED", "RESPONDED", "INTERVIEWING", "OFFER", "REJECTED", "DISCARDED", "SKIP"] as const;
 
 type AllowedAppStatus = (typeof allowedAppStatuses)[number];
 
