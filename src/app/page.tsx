@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Search, MapPin, Sparkles, ArrowRight, FileText, Activity } from "lucide-react";
+import { Search, Sparkles, ArrowRight, FileText, Activity } from "lucide-react";
 
 export default function Home() {
   return (
@@ -16,45 +16,22 @@ export default function Home() {
             <Sparkles suppressHydrationWarning className="w-4 h-4" /> Your Personal AI Job Search Assistant
           </div>
           <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-foreground to-foreground/60 mb-6 drop-shadow-sm">
-            We find your jobs. <br className="hidden sm:block" />
-            We fix your <span className="text-primary text-glow">resume.</span>
+            Job hunting is <span className="text-primary text-glow">stressful.</span> <br className="hidden sm:block" />
+            Let us do the <span className="text-primary text-glow">work.</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Tell us your skills, salary, and location. We surface every matching job in the world — then automatically tailor your resume for each one. Save hours every day.
+            We find the perfect roles, customize your resume, and apply on your behalf. You sit back; we hustle. Always 100% free.
           </p>
 
-          {/* Floating Search Hero Card */}
-          <div className="bg-card/40 backdrop-blur-2xl border border-border/50 rounded-3xl p-4 sm:p-6 shadow-2xl max-w-3xl mx-auto glow-shadow">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-              <div className="md:col-span-6 bg-background/50 border border-border/50 rounded-2xl p-2 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary/50 transition-all">
-                <div className="flex items-center gap-3 px-2">
-                  <Search suppressHydrationWarning className="w-5 h-5 text-muted-foreground" />
-                  <input
-                    className="w-full outline-none text-sm bg-transparent py-1.5 text-foreground placeholder:text-muted-foreground"
-                    placeholder="Company, role, or keyword…"
-                  />
-                </div>
-              </div>
-              <div className="md:col-span-4 bg-background/50 border border-border/50 rounded-2xl p-2 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary/50 transition-all">
-                <div className="flex items-center gap-3 px-2">
-                  <MapPin suppressHydrationWarning className="w-5 h-5 text-muted-foreground" />
-                  <input 
-                    className="w-full outline-none text-sm bg-transparent py-1.5 text-foreground placeholder:text-muted-foreground" 
-                    placeholder="Remote, SF…" 
-                  />
-                </div>
-              </div>
-              <div className="md:col-span-2 flex items-stretch">
-                <Link
-                  href="/pipeline"
-                  className="w-full h-full flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-2xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-[0_0_20px_-5px_oklch(0.68_0.18_260)] hover:shadow-[0_0_25px_-5px_oklch(0.68_0.18_260)]"
-                >
-                  Start <ArrowRight suppressHydrationWarning className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-            
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
+          {/* CTA + Quick Links */}
+          <div className="flex flex-col items-center gap-6">
+            <Link
+              href="/pipeline"
+              className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-2xl px-8 py-4 text-base font-semibold hover:bg-primary/90 transition-colors shadow-[0_0_20px_-5px_oklch(0.68_0.18_260)] hover:shadow-[0_0_25px_-5px_oklch(0.68_0.18_260)]"
+            >
+              Get Started <ArrowRight suppressHydrationWarning className="w-5 h-5" />
+            </Link>
+            <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
               <span>Quick links:</span>
               <Link href="/dashboard" className="hover:text-primary transition-colors hover:text-glow">Dashboard</Link>
               <span className="opacity-30">•</span>

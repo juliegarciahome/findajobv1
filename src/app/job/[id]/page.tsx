@@ -106,14 +106,27 @@ function LegitimacyBadge({ tier }: { tier?: string | null }) {
 export default function JobDetailPage({ params }: { params: { id: string } }) {
   const { tenantEmail, setTenantEmail } = useTenantEmail();
   const [job, setJob] = useState<Job | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [prepLoading, setPrepLoading] = useState(false);
 
   const refresh = useCallback(async () => {
-    const res = await apiFetch(`/api/jobs/${params.id}`, { tenantEmail });
-    if (!res.ok) return;
-    const data = (await res.json()) as { job: Job };
-    setJob(data.job);
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiFetch(`/api/jobs/${params.id}`, { tenantEmail });
+      if (!res.ok) {
+        setError(res.status === 404 ? "Job not found." : `Error loading job (${res.status}).`);
+        return;
+      }
+      const data = (await res.json()) as { job: Job };
+      setJob(data.job);
+    } catch {
+      setError("Could not connect to server. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }, [params.id, tenantEmail]);
 
   useEffect(() => { void refresh(); }, [refresh]);
@@ -159,9 +172,24 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
       backLink={{ href: "/pipeline", label: "Back to Pipeline" }}
       right={<TenantSwitcher tenantEmail={tenantEmail} setTenantEmail={setTenantEmail} />}
     >
-      {!job ? (
-        <div className="text-sm text-muted-foreground">Loading…</div>
-      ) : (
+      {loading ? (
+        <div className="flex items-center gap-3 text-sm text-muted-foreground py-12">
+          <div className="w-4 h-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          Loading job details…
+        </div>
+      ) : error ? (
+        <div className="py-12 text-center space-y-3">
+          <p className="text-red-500 font-medium">{error}</p>
+          <button
+            onClick={() => void refresh()}
+            className="text-sm text-primary hover:underline"
+          >
+            Try again
+          </button>
+          <span className="mx-2 text-muted-foreground">·</span>
+          <a href="/pipeline" className="text-sm text-primary hover:underline">Back to Pipeline</a>
+        </div>
+      ) : !job ? null : (
         <div className="space-y-6">
           {/* Actions bar */}
           <div className="flex flex-wrap gap-2 items-center">

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, ClipboardList, Sparkles } from "lucide-react";
+import { BottomNav } from "@/components/bottom-nav";
 
 export function AppShell(props: {
   title: string;
@@ -53,7 +54,7 @@ export function AppShell(props: {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 relative">
         <div className="mb-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -77,6 +78,8 @@ export function AppShell(props: {
 
         {props.children}
       </main>
+
+      <BottomNav />
     </div>
   );
 }

@@ -8,7 +8,6 @@ export function TenantSwitcher(props: {
 }) {
   return (
     <div className="flex items-center gap-2">
-      <div className="text-xs text-muted-foreground">Tenant</div>
       <Input
         className="h-8 w-64"
         placeholder="you@example.com"
