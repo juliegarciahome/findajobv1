@@ -50,6 +50,8 @@
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       # No separate BullMQ worker in this compose file — ingest runs inside the web process.
       USE_BULLMQ_INGEST: "false"
+    volumes:
+      - generated_pdfs:/app/public/generated
     depends_on:
       postgres:
         condition: service_healthy
@@ -72,3 +74,4 @@
 volumes:
   postgres_data:
   redis_data:
+  generated_pdfs:

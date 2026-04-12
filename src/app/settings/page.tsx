@@ -32,7 +32,6 @@ type Profile = {
 
 type Resume = { rawMarkdown: string };
 
-const ARCHETYPE_OPTIONS = ["LLMOps", "Agentic", "PM", "SA", "FDE", "Transformation", "Engineering", "Other"];
 const VISA_OPTIONS = ["No visa required", "EU/EEA citizen", "Work permit needed", "Sponsorship required", "Open to relocation"];
 
 export default function SettingsPage() {
@@ -122,6 +121,8 @@ export default function SettingsPage() {
         const t = await rRes.text();
         throw new Error(`Resume save failed (${rRes.status})${t ? `: ${t.slice(0, 200)}` : ""}`);
       }
+      // Reload from server to confirm what was actually saved
+      await loadData();
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (e: unknown) {
@@ -290,7 +291,7 @@ export default function SettingsPage() {
                 <div>
                   <label className="text-sm font-medium mb-1 block">Archetype Keywords (for AI detection)</label>
                   <p className="text-xs text-muted-foreground mb-2">
-                    These help AI correctly classify you. Options: {ARCHETYPE_OPTIONS.join(", ")}
+                    These help AI correctly classify your profile.
                   </p>
                   <Input
                     placeholder="e.g. SA, FDE, Agentic"
@@ -368,26 +369,6 @@ export default function SettingsPage() {
           </TabsContent>
         </Tabs>
 
-        {/* Archetype reference */}
-        <Card className="rounded-2xl border-dashed">
-          <CardHeader><CardTitle className="text-sm">Archetype Reference</CardTitle></CardHeader>
-          <CardContent className="flex flex-wrap gap-2">
-            {[
-              { name: "LLMOps", desc: "Deploys/observes LLMs at scale" },
-              { name: "Agentic", desc: "Builds AI agent pipelines" },
-              { name: "PM", desc: "AI product manager" },
-              { name: "SA", desc: "Solutions Architect — technical pre-sales" },
-              { name: "FDE", desc: "Forward Deployed Engineer — customer implementation" },
-              { name: "Transformation", desc: "Digital/AI transformation lead" },
-              { name: "Engineering", desc: "Core AI/ML engineer" },
-            ].map((a) => (
-              <Badge key={a.name} variant="secondary" className="gap-1 py-1">
-                <span className="font-semibold">{a.name}</span>
-                <span className="opacity-60 text-xs">— {a.desc}</span>
-              </Badge>
-            ))}
-          </CardContent>
-        </Card>
       </div>
     </AppShell>
   );

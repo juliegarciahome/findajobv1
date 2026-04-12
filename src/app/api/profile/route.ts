@@ -72,8 +72,13 @@ export async function POST(req: NextRequest) {
   if (body.githubUrl !== undefined) updateData.githubUrl = body.githubUrl;
   if (body.exitStory !== undefined) updateData.exitStory = body.exitStory;
   if (body.superpowers !== undefined) updateData.superpowers = body.superpowers ?? [];
-  if (body.proofPoints !== undefined) updateData.proofPoints = body.proofPoints ?? [];
-  if (body.archetypes !== undefined) updateData.archetypes = body.archetypes ?? [];
+  if (body.proofPoints !== undefined) {
+    // Prisma Json fields must receive plain serializable objects — strip undefined values
+    updateData.proofPoints = JSON.parse(JSON.stringify(body.proofPoints ?? []));
+  }
+  if (body.archetypes !== undefined) {
+    updateData.archetypes = JSON.parse(JSON.stringify(body.archetypes ?? []));
+  }
   if (body.compensationMin !== undefined) updateData.compensationMin = body.compensationMin;
   if (body.visaStatus !== undefined) updateData.visaStatus = body.visaStatus;
 
@@ -92,8 +97,8 @@ export async function POST(req: NextRequest) {
       githubUrl: body.githubUrl ?? null,
       exitStory: body.exitStory ?? null,
       superpowers: body.superpowers ?? [],
-      proofPoints: body.proofPoints ?? [],
-      archetypes: body.archetypes ?? [],
+      proofPoints: JSON.parse(JSON.stringify(body.proofPoints ?? [])),
+      archetypes: JSON.parse(JSON.stringify(body.archetypes ?? [])),
       compensationMin: body.compensationMin ?? null,
       visaStatus: body.visaStatus ?? null,
     },

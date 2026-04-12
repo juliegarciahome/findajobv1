@@ -13,14 +13,14 @@ export default function Home() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 sm:pt-32 sm:pb-24">
         <div className="text-center max-w-4xl mx-auto">
           <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary px-4 py-1.5 rounded-full text-sm font-medium mb-8 glow-shadow">
-            <Sparkles suppressHydrationWarning className="w-4 h-4" /> AI-Powered Jobs Pipeline
+            <Sparkles suppressHydrationWarning className="w-4 h-4" /> Your Personal AI Job Search Assistant
           </div>
           <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-foreground to-foreground/60 mb-6 drop-shadow-sm">
-            Find, evaluate, and track <br className="hidden sm:block" />
-            jobs with <span className="text-primary text-glow">superhuman</span> speed.
+            We find your jobs. <br className="hidden sm:block" />
+            We fix your <span className="text-primary text-glow">resume.</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Paste job URLs, automatically extract details, run deep AI evaluation, generate PDF reports, and manage your entire application pipeline.
+            Tell us your skills, salary, and location. We surface every matching job in the world — then automatically tailor your resume for each one. Save hours every day.
           </p>
 
           {/* Floating Search Hero Card */}
@@ -60,6 +60,8 @@ export default function Home() {
               <span className="opacity-30">•</span>
               <Link href="/pipeline" className="hover:text-primary transition-colors hover:text-glow">Pipeline</Link>
               <span className="opacity-30">•</span>
+              <Link href="/scan" className="hover:text-primary transition-colors hover:text-glow">Scanner</Link>
+              <span className="opacity-30">•</span>
               <Link href="/settings" className="hover:text-primary transition-colors hover:text-glow">Settings</Link>
             </div>
           </div>
@@ -71,8 +73,8 @@ export default function Home() {
             <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Search suppressHydrationWarning className="w-6 h-6 text-primary" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">Ingest & Scrape</h3>
-            <p className="text-sm text-muted-foreground">Paste URLs from Greenhouse, Ashby, Lever, or anywhere. We automatically parse the role, company, and JD.</p>
+            <h3 className="text-lg font-semibold text-foreground mb-2">Just Drop a Link</h3>
+            <p className="text-sm text-muted-foreground">Copy the job posting URL from anywhere — LinkedIn, company websites, Greenhouse, Lever, Ashby — and we automatically read the full details for you. No copy-pasting required.</p>
           </div>
           
           <div className="bg-card/40 backdrop-blur-xl border border-border/50 rounded-3xl p-6 hover:border-primary/30 transition-all group relative overflow-hidden">
@@ -80,51 +82,52 @@ export default function Home() {
             <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform relative z-10">
               <FileText suppressHydrationWarning className="w-6 h-6 text-primary" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2 relative z-10">AI Evaluation</h3>
-            <p className="text-sm text-muted-foreground relative z-10">Match your resume against the JD using Anthropic Claude or Google Gemini. Get a PDF report instantly.</p>
+            <h3 className="text-lg font-semibold text-foreground mb-2 relative z-10">Know Exactly Where You Stand</h3>
+            <p className="text-sm text-muted-foreground relative z-10">Our AI reads your resume and the job posting side by side, scores your fit out of 100, spots the gaps, and tells you exactly what to say — plus a full PDF report you can keep.</p>
           </div>
 
           <div className="bg-card/40 backdrop-blur-xl border border-border/50 rounded-3xl p-6 hover:border-primary/30 transition-all group">
             <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Activity suppressHydrationWarning className="w-6 h-6 text-primary" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">Kanban Tracking</h3>
-            <p className="text-sm text-muted-foreground">Update statuses, track pipelines, and manage offers. Multi-tenant dashboard included.</p>
+            <h3 className="text-lg font-semibold text-foreground mb-2">Never Lose Track Again</h3>
+            <p className="text-sm text-muted-foreground">See every job you've applied for in one place. Track where you are — Applied, Interviewing, Offer, Rejected — so nothing falls through the cracks.</p>
           </div>
         </div>
 
-        {/* Quick Start Guide */}
+        {/* How It Works */}
         <div className="mt-20 max-w-3xl mx-auto">
           <div className="bg-card/30 backdrop-blur-md border border-border/40 rounded-3xl p-8 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
             <h3 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
-              <Sparkles suppressHydrationWarning className="w-5 h-5 text-primary" /> Quick Start
+              <Sparkles suppressHydrationWarning className="w-5 h-5 text-primary" /> How It Works
             </h3>
             <div className="space-y-4">
               <div className="flex gap-4">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold">1</div>
                 <div>
-                  <h4 className="font-medium text-foreground">Configure your tenant</h4>
-                  <p className="text-sm text-muted-foreground mt-1">Go to <Link href="/settings" className="text-primary hover:underline">Settings</Link> to set your email and paste your base markdown resume.</p>
+                  <h4 className="font-medium text-foreground">Set up your profile in 2 minutes</h4>
+                  <p className="text-sm text-muted-foreground mt-1">Go to <Link href="/settings" className="text-primary hover:underline">Settings</Link> and paste your resume. That's all the AI needs to start working for you.</p>
                 </div>
               </div>
               <div className="flex gap-4">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold">2</div>
                 <div>
-                  <h4 className="font-medium text-foreground">Ingest URLs</h4>
-                  <p className="text-sm text-muted-foreground mt-1">Head over to the <Link href="/pipeline" className="text-primary hover:underline">Pipeline</Link> and paste a job URL.</p>
+                  <h4 className="font-medium text-foreground">Find a job you like and paste the link</h4>
+                  <p className="text-sm text-muted-foreground mt-1">Go to the <Link href="/pipeline" className="text-primary hover:underline">Pipeline</Link>, drop in any job URL, and we take care of the rest. No forms to fill out.</p>
                 </div>
               </div>
               <div className="flex gap-4">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold">3</div>
                 <div>
-                  <h4 className="font-medium text-foreground">Review & track</h4>
-                  <p className="text-sm text-muted-foreground mt-1">Click into the job details to read the AI evaluation, download the PDF, and update your application status.</p>
+                  <h4 className="font-medium text-foreground">Get your AI report and take action</h4>
+                  <p className="text-sm text-muted-foreground mt-1">See your match score, what to highlight, how to prep for the interview, and download a full PDF — then track it all the way to an offer.</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
       </div>
     </main>
   );
