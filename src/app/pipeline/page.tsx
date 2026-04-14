@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -18,18 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { apiFetch } from "@/lib/api";
 import { useTenantEmail } from "@/lib/client-tenant";
 import { TenantSwitcher } from "@/components/tenant-switcher";
-import { ArrowRight, FileText, Search, Sparkles, Loader2 } from "lucide-react";
-
-const AUTO_INGEST_URLS = [
-  "https://job-boards.greenhouse.io/figma/jobs/5711571004?gh_jid=5711571004",
-  "https://jobs.ashbyhq.com/notion/ff6129b1-5ed5-414d-ac0c-579e86e141d9",
-  "https://jobs.lever.co/marketer-hire/b7680247-12b8-43e9-90fb-27f0efa4d4ac",
-  "https://jobs.ashbyhq.com/Linear/82778dbf-711e-4d23-9d49-4a60db76737a",
-  "https://jobs.ashbyhq.com/Linear/3adaa1f5-2cf1-480d-8daf-92345ec08395",
-  "https://jobs.ashbyhq.com/Linear/c21af93e-210f-4969-8eaa-90fb16a5b720",
-  "https://job-boards.greenhouse.io/figma/jobs/5830640004?gh_jid=5830640004",
-  "https://jobs.lever.co/protolabs/7eeb766b-541a-4a36-ac42-583ea99c136c",
-];
+import { ArrowRight, FileText, Loader2, Search, Sparkles } from "lucide-react";
 
 type AppStatus = "NONE" | "APPLIED" | "RESPONDED" | "INTERVIEWING" | "OFFER" | "REJECTED" | "DISCARDED" | "SKIP";
 
@@ -79,13 +68,8 @@ export default function PipelinePage() {
   const [busy, setBusy] = useState(false);
   const [filter, setFilter] = useState("");
   const [error, setError] = useState<string | null>(null);
-
-  // Interstitial states
-  const [showInterstitial, setShowInterstitial] = useState(false);
-  const [progress, setProgress] = useState(0);
-
-  const autoIngestRef = useRef<Record<string, boolean>>({});
-  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [evaluating, setEvaluating] = useState(false);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   async function retryStuck() {
     setError(null);
@@ -109,14 +93,30 @@ export default function PipelinePage() {
     }
   }
 
-  useEffect(() => {
-    return () => {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-        progressIntervalRef.current = null;
-      }
-    };
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+    setEvaluating(false);
   }, []);
+
+  const startPolling = useCallback(() => {
+    if (pollRef.current) return;
+    setEvaluating(true);
+    pollRef.current = setInterval(async () => {
+      const res = await apiFetch("/api/jobs", { tenantEmail });
+      if (!res.ok) return;
+      const data = (await res.json()) as { jobs: Job[] };
+      setJobs(data.jobs);
+      const stillPending = data.jobs.some((j) => j.status === "NEW" || j.status === "SCRAPING" || j.status === "EVALUATING");
+      if (!stillPending) stopPolling();
+    }, 3000);
+  }, [tenantEmail, stopPolling]);
+
+  useEffect(() => {
+    return () => stopPolling();
+  }, [stopPolling]);
 
   async function refresh() {
     setError(null);
@@ -124,66 +124,9 @@ export default function PipelinePage() {
     if (!res.ok) return;
     const data = (await res.json()) as { jobs: Job[] };
     setJobs(data.jobs);
-
-    // Auto-ingest logic
-    if (tenantEmail && !autoIngestRef.current[tenantEmail]) {
-      autoIngestRef.current[tenantEmail] = true;
-
-      // Re-trigger URLs that are new OR stuck in SCRAPING/ERROR from a previous session
-      const STUCK_STATUSES = new Set(["SCRAPING", "ERROR"]);
-      const existingByUrl = new Map(data.jobs.map((j) => [j.url, j]));
-      const missing = AUTO_INGEST_URLS.filter((u) => {
-        const job = existingByUrl.get(u);
-        return !job || STUCK_STATUSES.has(job.status);
-      });
-
-      if (missing.length > 0) {
-        // Show interstitial while ingest + background scraping is kicking off
-        setShowInterstitial(true);
-        const startTime = Date.now();
-        const duration = 5000;
-
-        if (progressIntervalRef.current) {
-          clearInterval(progressIntervalRef.current);
-          progressIntervalRef.current = null;
-        }
-        progressIntervalRef.current = setInterval(() => {
-          const elapsed = Date.now() - startTime;
-          const p = Math.min(100, (elapsed / duration) * 100);
-          setProgress(p);
-          if (p >= 100) {
-            if (progressIntervalRef.current) {
-              clearInterval(progressIntervalRef.current);
-              progressIntervalRef.current = null;
-            }
-            setShowInterstitial(false);
-          }
-        }, 50);
-
-        setBusy(true);
-        try {
-          const baseUrl = window.location.origin;
-          await fetch(`${baseUrl}/api/jobs/ingest`, {
-            method: "POST",
-            headers: {
-              "content-type": "application/json",
-              "x-user-email": tenantEmail,
-            },
-            body: JSON.stringify({ urls: missing }),
-          });
-          const res2 = await fetch(`${baseUrl}/api/jobs`, {
-            headers: { "x-user-email": tenantEmail },
-          });
-          if (res2.ok) {
-            setJobs(((await res2.json()) as { jobs: Job[] }).jobs);
-          }
-        } catch (e) {
-          console.error("Auto ingest failed", e);
-        } finally {
-          setBusy(false);
-        }
-      }
-    }
+    const hasPending = data.jobs.some((j) => j.status === "NEW" || j.status === "SCRAPING" || j.status === "EVALUATING");
+    if (hasPending) startPolling();
+    else stopPolling();
   }
 
   useEffect(() => {
@@ -233,6 +176,7 @@ export default function PipelinePage() {
 
       setUrlsText("");
       await refresh();
+      startPolling();
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -246,35 +190,6 @@ export default function PipelinePage() {
       description="Ingest job URLs, evaluate fit, and track application progress."
       right={<TenantSwitcher tenantEmail={tenantEmail} setTenantEmail={setTenantEmail} />}
     >
-      {/* Interstitial Overlay */}
-      {showInterstitial && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/80 backdrop-blur-2xl">
-          <div className="flex flex-col items-center max-w-md w-full p-8 text-center bg-card/40 border border-border/50 rounded-3xl shadow-2xl glow-shadow animate-in fade-in zoom-in duration-500">
-            <div className="relative flex items-center justify-center w-20 h-20 mb-6 bg-primary/10 rounded-2xl border border-primary/30 shadow-[0_0_30px_-5px_oklch(0.68_0.18_260)]">
-              <Sparkles className="w-10 h-10 text-primary animate-pulse" />
-              <Loader2 className="absolute w-24 h-24 text-primary/40 animate-spin" strokeWidth={1} />
-            </div>
-            
-            <h2 className="text-2xl font-extrabold tracking-tight text-foreground mb-3 text-glow">
-              AI is pulling all jobs for you...
-            </h2>
-            <p className="text-sm text-muted-foreground mb-8">
-              We are automatically ingesting selected job URLs. Evaluating fit in the background.
-            </p>
-
-            <div className="w-full h-2 bg-muted/50 rounded-full overflow-hidden border border-border/50">
-              <div 
-                className="h-full bg-primary transition-all ease-linear shadow-[0_0_10px_oklch(0.68_0.18_260)]"
-                style={{ width: `${progress}%`, transitionDuration: '50ms' }}
-              />
-            </div>
-            <div className="mt-3 text-xs font-medium text-primary">
-              {Math.round(progress)}%
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="space-y-6 relative z-10">
         {error ? (
           <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive shadow-lg shadow-destructive/10 backdrop-blur-xl">
@@ -302,12 +217,12 @@ export default function PipelinePage() {
               <div className="flex gap-2">
                 <Button
                   onClick={() => void ingest()}
-                  disabled={busy || showInterstitial}
+                  disabled={busy}
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_15px_-3px_oklch(0.68_0.18_260)] hover:shadow-[0_0_20px_-3px_oklch(0.68_0.18_260)] transition-all rounded-xl"
                 >
                   {busy ? "Working..." : "Ingest URLs"}
                 </Button>
-                <Button variant="outline" onClick={() => void refresh()} disabled={busy || showInterstitial} className="rounded-xl border-border/50 bg-background/50">
+                <Button variant="outline" onClick={() => void refresh()} disabled={busy} className="rounded-xl border-border/50 bg-background/50">
                   Refresh
                 </Button>
               </div>
@@ -322,9 +237,16 @@ export default function PipelinePage() {
                   Retry stuck jobs ({jobs.filter((j) => j.status === "SCRAPING" || j.status === "ERROR").length})
                 </Button>
               )}
-              <div className="text-xs text-muted-foreground">
-                Tip: Jobs appear in the table immediately. Evaluation continues in the background.
-              </div>
+              {evaluating ? (
+                <div className="flex items-center gap-2 text-xs text-primary animate-pulse">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  Evaluating jobs… refreshing automatically
+                </div>
+              ) : (
+                <div className="text-xs text-muted-foreground">
+                  Tip: Jobs appear in the table immediately. Evaluation continues in the background.
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -362,8 +284,9 @@ export default function PipelinePage() {
                       <TableRow className="hover:bg-transparent border-0">
                         <TableCell colSpan={7} className="py-16 text-center text-muted-foreground">
                           <div className="flex flex-col items-center gap-3">
-                            <Search className="w-8 h-8 opacity-20" />
-                            <p>No jobs found. Try adjusting your search or ingest a new URL.</p>
+                            <Sparkles className="w-8 h-8 opacity-20" />
+                            <p className="font-medium">No jobs yet</p>
+                            <p className="text-xs max-w-xs">Paste a job URL from LinkedIn, Greenhouse, Ashby, or Lever into the box on the left and click <strong>Ingest URLs</strong> to get started.</p>
                           </div>
                         </TableCell>
                       </TableRow>

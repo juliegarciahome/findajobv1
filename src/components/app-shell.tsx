@@ -27,7 +27,7 @@ export function AppShell(props: {
 
               <nav className="hidden md:flex items-center gap-6">
                 <Link
-                  href="/pipeline"
+                  href="/scan"
                   className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Find Jobs

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Search, Sparkles, ArrowRight, FileText, Activity } from "lucide-react";
+import { Search, ArrowRight, FileText, Activity, Sparkles } from "lucide-react";
 
 export default function Home() {
   return (
@@ -20,7 +20,7 @@ export default function Home() {
             Let us do the <span className="text-primary text-glow">work.</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-            We find the perfect roles, customize your resume, and apply on your behalf. You sit back; we hustle. Always 100% free.
+            We find the perfect roles, customize your resume, apply on your behalf. You sit back; we hustle. Always 100% free.
           </p>
 
           {/* CTA + Quick Links */}
@@ -72,38 +72,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* How It Works */}
-        <div className="mt-20 max-w-3xl mx-auto">
-          <div className="bg-card/30 backdrop-blur-md border border-border/40 rounded-3xl p-8 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-            <h3 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
-              <Sparkles suppressHydrationWarning className="w-5 h-5 text-primary" /> How It Works
-            </h3>
-            <div className="space-y-4">
-              <div className="flex gap-4">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold">1</div>
-                <div>
-                  <h4 className="font-medium text-foreground">Set up your profile in 2 minutes</h4>
-                  <p className="text-sm text-muted-foreground mt-1">Go to <Link href="/settings" className="text-primary hover:underline">Settings</Link> and paste your resume. That's all the AI needs to start working for you.</p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold">2</div>
-                <div>
-                  <h4 className="font-medium text-foreground">Find a job you like and paste the link</h4>
-                  <p className="text-sm text-muted-foreground mt-1">Go to the <Link href="/pipeline" className="text-primary hover:underline">Pipeline</Link>, drop in any job URL, and we take care of the rest. No forms to fill out.</p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold">3</div>
-                <div>
-                  <h4 className="font-medium text-foreground">Get your AI report and take action</h4>
-                  <p className="text-sm text-muted-foreground mt-1">See your match score, what to highlight, how to prep for the interview, and download a full PDF — then track it all the way to an offer.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
       </div>
     </main>
