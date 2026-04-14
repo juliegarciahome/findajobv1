@@ -48,6 +48,7 @@
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3005}
       GOOGLE_AI_API_KEY: ${GOOGLE_AI_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ACCESS_PASSWORD: ${ACCESS_PASSWORD:-}
       # No separate BullMQ worker in this compose file — ingest runs inside the web process.
       USE_BULLMQ_INGEST: "false"
     volumes:
