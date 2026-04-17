@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
-import { TenantSwitcher } from "@/components/tenant-switcher";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -37,7 +36,7 @@ type ScanResult = {
 const CATEGORIES = [...new Set(PORTALS.map((p) => p.category))];
 
 export default function ScanPage() {
-  const { tenantEmail, setTenantEmail } = useTenantEmail();
+  const { tenantEmail } = useTenantEmail();
   const [result, setResult] = useState<ScanResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -108,7 +107,6 @@ export default function ScanPage() {
       title="Portal Scanner"
       description="Scan 35+ company career portals for matching roles and add them to your pipeline."
       backLink={{ href: "/dashboard", label: "Back to dashboard" }}
-      right={<TenantSwitcher tenantEmail={tenantEmail} setTenantEmail={setTenantEmail} />}
     >
       <div className="space-y-6">
         {/* Category filter */}

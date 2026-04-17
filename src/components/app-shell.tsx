@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowLeft, ClipboardList, Sparkles } from "lucide-react";
 import { BottomNav } from "@/components/bottom-nav";
+import { UserMenu } from "@/components/tenant-switcher";
 
 export function AppShell(props: {
   title: string;
@@ -49,6 +52,7 @@ export function AppShell(props: {
 
             <div className="flex items-center gap-3">
               {props.right}
+              <UserMenu />
             </div>
           </div>
         </div>

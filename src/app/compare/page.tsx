@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
-import { TenantSwitcher } from "@/components/tenant-switcher";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -54,7 +53,7 @@ function ScoreCell({ val }: { val?: number }) {
 }
 
 export default function ComparePage() {
-  const { tenantEmail, setTenantEmail } = useTenantEmail();
+  const { tenantEmail } = useTenantEmail();
   const [allJobs, setAllJobs] = useState<Job[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,8 +90,7 @@ export default function ComparePage() {
 
   if (loading) {
     return (
-      <AppShell title="Compare Offers" description="Loading…" backLink={{ href: "/dashboard", label: "Back" }}
-        right={<TenantSwitcher tenantEmail={tenantEmail} setTenantEmail={setTenantEmail} />}>
+      <AppShell title="Compare Offers" description="Loading…" backLink={{ href: "/dashboard", label: "Back" }}>
         <div className="text-sm text-muted-foreground">Loading jobs…</div>
       </AppShell>
     );
@@ -103,7 +101,6 @@ export default function ComparePage() {
       title="Compare Offers"
       description="Side-by-side 10-dimension comparison of up to 5 evaluated jobs."
       backLink={{ href: "/dashboard", label: "Back to dashboard" }}
-      right={<TenantSwitcher tenantEmail={tenantEmail} setTenantEmail={setTenantEmail} />}
     >
       <div className="space-y-6">
         {/* Job picker */}

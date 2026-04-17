@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
-import { TenantSwitcher } from "@/components/tenant-switcher";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { apiFetch } from "@/lib/api";
@@ -75,7 +74,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function PatternsPage() {
-  const { tenantEmail, setTenantEmail } = useTenantEmail();
+  const { tenantEmail } = useTenantEmail();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -89,8 +88,7 @@ export default function PatternsPage() {
 
   if (loading) {
     return (
-      <AppShell title="Pattern Analysis" description="Loading…" backLink={{ href: "/dashboard", label: "Back to dashboard" }}
-        right={<TenantSwitcher tenantEmail={tenantEmail} setTenantEmail={setTenantEmail} />}>
+      <AppShell title="Pattern Analysis" description="Loading…" backLink={{ href: "/dashboard", label: "Back to dashboard" }}>
         <div className="text-sm text-muted-foreground">Loading analytics…</div>
       </AppShell>
     );
@@ -105,7 +103,6 @@ export default function PatternsPage() {
       title="Pattern Analysis"
       description="Insights from your job search pipeline."
       backLink={{ href: "/dashboard", label: "Back to dashboard" }}
-      right={<TenantSwitcher tenantEmail={tenantEmail} setTenantEmail={setTenantEmail} />}
     >
       <div className="space-y-6">
         {/* Summary stats */}

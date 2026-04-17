@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
-import { TenantSwitcher } from "@/components/tenant-switcher";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -104,7 +103,7 @@ function LegitimacyBadge({ tier }: { tier?: string | null }) {
 }
 
 export default function JobDetailPage({ params }: { params: { id: string } }) {
-  const { tenantEmail, setTenantEmail } = useTenantEmail();
+  const { tenantEmail } = useTenantEmail();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -170,7 +169,6 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
       title={job?.company ?? "Job"}
       description={job?.role ?? ""}
       backLink={{ href: "/pipeline", label: "Back to Pipeline" }}
-      right={<TenantSwitcher tenantEmail={tenantEmail} setTenantEmail={setTenantEmail} />}
     >
       {loading ? (
         <div className="flex items-center gap-3 text-sm text-muted-foreground py-12">

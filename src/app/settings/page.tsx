@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { useTenantEmail } from "@/lib/client-tenant";
-import { TenantSwitcher } from "@/components/tenant-switcher";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +34,7 @@ type Resume = { rawMarkdown: string };
 const VISA_OPTIONS = ["No visa required", "EU/EEA citizen", "Work permit needed", "Sponsorship required", "Open to relocation"];
 
 export default function SettingsPage() {
-  const { tenantEmail, setTenantEmail } = useTenantEmail();
+  const { tenantEmail } = useTenantEmail();
   const [profile, setProfile] = useState<Profile>({
     fullName: null,
     location: null,
@@ -155,7 +154,6 @@ export default function SettingsPage() {
       title="Settings"
       description="Profile, resume, and career preferences for AI evaluation."
       backLink={{ href: "/dashboard", label: "Back to dashboard" }}
-      right={<TenantSwitcher tenantEmail={tenantEmail} setTenantEmail={setTenantEmail} />}
     >
       <div className="space-y-4">
         <div className="flex flex-col items-end gap-2">

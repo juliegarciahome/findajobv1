@@ -17,8 +17,6 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { apiFetch } from "@/lib/api";
 import { useTenantEmail } from "@/lib/client-tenant";
-import { TenantSwitcher } from "@/components/tenant-switcher";
-import { useSession } from "next-auth/react";
 import { ArrowRight, FileText, Loader2, Search, Sparkles, BrainCircuit } from "lucide-react";
 
 const AUTO_INGEST_URLS = [
@@ -71,15 +69,7 @@ function appStatusColor(s: AppStatus | null | undefined) {
 }
 
 export default function PipelinePage() {
-  const { tenantEmail, setTenantEmail } = useTenantEmail();
-  const { data: session } = useSession();
-
-  // Seed tenant from Google session email on login
-  useEffect(() => {
-    if (session?.user?.email) {
-      setTenantEmail(session.user.email);
-    }
-  }, [session?.user?.email, setTenantEmail]);
+  const { tenantEmail } = useTenantEmail();
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [urlsText, setUrlsText] = useState("");
@@ -234,7 +224,6 @@ export default function PipelinePage() {
     <AppShell
       title="Pipeline"
       description="Ingest job URLs, evaluate fit, and track application progress."
-      right={<TenantSwitcher tenantEmail={tenantEmail} setTenantEmail={setTenantEmail} />}
     >
       {/* Auto-ingest interstitial overlay */}
       {showInterstitial && (

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
-import { TenantSwitcher } from "@/components/tenant-switcher";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -38,7 +37,7 @@ const EMPTY_STORY = {
 };
 
 export default function StoryBankPage() {
-  const { tenantEmail, setTenantEmail } = useTenantEmail();
+  const { tenantEmail } = useTenantEmail();
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | "new" | null>(null);
@@ -103,7 +102,6 @@ export default function StoryBankPage() {
       title="Story Bank"
       description="STAR+R stories for interviews. Build your library once, reference forever."
       backLink={{ href: "/dashboard", label: "Back to dashboard" }}
-      right={<TenantSwitcher tenantEmail={tenantEmail} setTenantEmail={setTenantEmail} />}
     >
       <div className="space-y-6">
         <div className="flex justify-between items-center">

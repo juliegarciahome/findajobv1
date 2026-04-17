@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
-import { TenantSwitcher } from "@/components/tenant-switcher";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiFetch } from "@/lib/api";
@@ -24,7 +23,7 @@ type Prep = {
 };
 
 export default function InterviewPrepPage({ params }: { params: { id: string } }) {
-  const { tenantEmail, setTenantEmail } = useTenantEmail();
+  const { tenantEmail } = useTenantEmail();
   const [prep, setPrep] = useState<Prep | null>(null);
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -63,7 +62,6 @@ export default function InterviewPrepPage({ params }: { params: { id: string } }
       title={prep?.company ? `${prep.company} — Interview Prep` : "Interview Prep"}
       description={prep?.role ?? ""}
       backLink={{ href: `/job/${params.id}`, label: "Back to Job" }}
-      right={<TenantSwitcher tenantEmail={tenantEmail} setTenantEmail={setTenantEmail} />}
     >
       <div className="space-y-6">
         <div className="flex flex-wrap gap-2 items-center justify-between">

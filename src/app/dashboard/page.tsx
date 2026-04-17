@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
-import { TenantSwitcher } from "@/components/tenant-switcher";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useTenantEmail } from "@/lib/client-tenant";
@@ -26,7 +25,7 @@ type Job = {
 };
 
 export default function DashboardPage() {
-  const { tenantEmail, setTenantEmail } = useTenantEmail();
+  const { tenantEmail } = useTenantEmail();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -83,15 +82,12 @@ export default function DashboardPage() {
       title="Dashboard"
       description="Track KPIs and the status funnel across your pipeline."
       right={
-        <div className="flex items-center gap-3">
-          <TenantSwitcher tenantEmail={tenantEmail} setTenantEmail={setTenantEmail} />
-          <Link
-            className="inline-flex items-center justify-center gap-2 bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 rounded-xl px-4 py-2 text-sm font-medium transition-all shadow-[0_0_15px_-3px_oklch(0.68_0.18_260)] hover:shadow-[0_0_20px_-3px_oklch(0.68_0.18_260)]"
-            href="/pipeline"
-          >
-            Pipeline <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
+        <Link
+          className="inline-flex items-center justify-center gap-2 bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 rounded-xl px-4 py-2 text-sm font-medium transition-all shadow-[0_0_15px_-3px_oklch(0.68_0.18_260)] hover:shadow-[0_0_20px_-3px_oklch(0.68_0.18_260)]"
+          href="/pipeline"
+        >
+          Pipeline <ArrowRight className="w-4 h-4" />
+        </Link>
       }
     >
       <div className="grid gap-6 md:grid-cols-4">

@@ -16,12 +16,12 @@ export default function Home() {
           <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary px-4 py-1.5 rounded-full text-sm font-medium mb-8 glow-shadow">
             <Sparkles suppressHydrationWarning className="w-4 h-4" /> Your Personal AI Job Search Assistant
           </div>
-          <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-foreground to-foreground/60 mb-6 drop-shadow-sm">
-            Job hunting is <span className="text-primary text-glow">stressful.</span> <br className="hidden sm:block" />
-            Let us do the <span className="text-primary text-glow">work.</span>
+          <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-foreground to-foreground/60 mb-6 drop-shadow-sm pb-2">
+            Job hunting is <span className="text-primary text-glow">exhausting.</span> <br className="hidden sm:block" />
+            Let AI get you <span className="text-primary text-glow">hired.</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-            We find the perfect roles, customize your resume, apply on your behalf. You sit back; we hustle. Always 100% free.
+            I'm your AI Job Search Assistant, I find you the perfect jobs, tailor your resume, submit the applications, track your progress, I get you hired!
           </p>
 
           {/* CTA + Quick Links */}

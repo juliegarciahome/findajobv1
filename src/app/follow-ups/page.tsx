@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
-import { TenantSwitcher } from "@/components/tenant-switcher";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -74,7 +73,7 @@ Thank you for your consideration.
 };
 
 export default function FollowUpsPage() {
-  const { tenantEmail, setTenantEmail } = useTenantEmail();
+  const { tenantEmail } = useTenantEmail();
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -143,7 +142,6 @@ export default function FollowUpsPage() {
       title="Follow-ups"
       description="Track and draft follow-up messages for your applications."
       backLink={{ href: "/dashboard", label: "Back to dashboard" }}
-      right={<TenantSwitcher tenantEmail={tenantEmail} setTenantEmail={setTenantEmail} />}
     >
       <div className="space-y-6">
         <div className="flex justify-between items-center">
