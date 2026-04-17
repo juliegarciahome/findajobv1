@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Search, ArrowRight, FileText, Activity, Sparkles } from "lucide-react";
+import { Search, FileText, Activity, Sparkles } from "lucide-react";
+import { GetStartedButton } from "@/components/get-started-button";
 
 export default function Home() {
   return (
@@ -25,12 +26,7 @@ export default function Home() {
 
           {/* CTA + Quick Links */}
           <div className="flex flex-col items-center gap-6">
-            <Link
-              href="/pipeline"
-              className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-2xl px-8 py-4 text-base font-semibold hover:bg-primary/90 transition-colors shadow-[0_0_20px_-5px_oklch(0.68_0.18_260)] hover:shadow-[0_0_25px_-5px_oklch(0.68_0.18_260)]"
-            >
-              Get Started <ArrowRight suppressHydrationWarning className="w-5 h-5" />
-            </Link>
+            <GetStartedButton />
             <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
               <span>Quick links:</span>
               <Link href="/dashboard" className="hover:text-primary transition-colors hover:text-glow">Dashboard</Link>

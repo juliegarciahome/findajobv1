@@ -18,7 +18,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { apiFetch } from "@/lib/api";
 import { useTenantEmail } from "@/lib/client-tenant";
 import { TenantSwitcher } from "@/components/tenant-switcher";
-import { ArrowRight, FileText, Loader2, Search, Sparkles } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { ArrowRight, FileText, Loader2, Search, Sparkles, BrainCircuit } from "lucide-react";
+
+const AUTO_INGEST_URLS = [
+  "https://job-boards.greenhouse.io/figma/jobs/5711571004?gh_jid=5711571004",
+  "https://jobs.ashbyhq.com/notion/ff6129b1-5ed5-414d-ac0c-579e86e141d9",
+  "https://jobs.lever.co/marketer-hire/b7680247-12b8-43e9-90fb-27f0efa4d4ac",
+  "https://job-boards.greenhouse.io/figma/jobs/5830640004?gh_jid=5830640004",
+  "https://jobs.lever.co/protolabs/7eeb766b-541a-4a36-ac42-583ea99c136",
+];
 
 type AppStatus = "NONE" | "APPLIED" | "RESPONDED" | "INTERVIEWING" | "OFFER" | "REJECTED" | "DISCARDED" | "SKIP";
 
@@ -63,13 +72,24 @@ function appStatusColor(s: AppStatus | null | undefined) {
 
 export default function PipelinePage() {
   const { tenantEmail, setTenantEmail } = useTenantEmail();
+  const { data: session } = useSession();
+
+  // Seed tenant from Google session email on login
+  useEffect(() => {
+    if (session?.user?.email) {
+      setTenantEmail(session.user.email);
+    }
+  }, [session?.user?.email, setTenantEmail]);
+
   const [jobs, setJobs] = useState<Job[]>([]);
   const [urlsText, setUrlsText] = useState("");
   const [busy, setBusy] = useState(false);
   const [filter, setFilter] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [evaluating, setEvaluating] = useState(false);
+  const [showInterstitial, setShowInterstitial] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const autoIngestDoneRef = useRef(false);
 
   async function retryStuck() {
     setError(null);
@@ -127,10 +147,36 @@ export default function PipelinePage() {
     const hasPending = data.jobs.some((j) => j.status === "NEW" || j.status === "SCRAPING" || j.status === "EVALUATING");
     if (hasPending) startPolling();
     else stopPolling();
+    return data.jobs;
+  }
+
+  async function autoIngest() {
+    if (autoIngestDoneRef.current) return;
+    autoIngestDoneRef.current = true;
+    setShowInterstitial(true);
+    try {
+      await apiFetch("/api/jobs/ingest", {
+        tenantEmail,
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ urls: AUTO_INGEST_URLS }),
+      });
+      await refresh();
+      startPolling();
+    } catch {
+      // silently ignore — user can ingest manually
+    } finally {
+      setTimeout(() => setShowInterstitial(false), 2200);
+    }
   }
 
   useEffect(() => {
-    void refresh();
+    void (async () => {
+      const initialJobs = await refresh();
+      if (!initialJobs || initialJobs.length === 0) {
+        void autoIngest();
+      }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantEmail]);
 
@@ -190,6 +236,32 @@ export default function PipelinePage() {
       description="Ingest job URLs, evaluate fit, and track application progress."
       right={<TenantSwitcher tenantEmail={tenantEmail} setTenantEmail={setTenantEmail} />}
     >
+      {/* Auto-ingest interstitial overlay */}
+      {showInterstitial && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-6 text-center px-8">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+              <div className="relative rounded-full bg-primary/10 border border-primary/30 p-5">
+                <BrainCircuit className="w-10 h-10 text-primary" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold text-foreground">
+                AI is pulling all jobs <span className="text-primary text-glow">for you</span>
+              </h2>
+              <p className="text-muted-foreground text-sm max-w-xs">
+                Fetching, scraping, and evaluating your matched roles in the background…
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-primary animate-pulse">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              This only takes a moment
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="space-y-6 relative z-10">
         {error ? (
           <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive shadow-lg shadow-destructive/10 backdrop-blur-xl">

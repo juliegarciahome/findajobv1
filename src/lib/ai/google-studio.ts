@@ -23,7 +23,7 @@ Return strict JSON with keys: title, company, salary, remote, techStack (array o
 HTML:\n${opts.html.slice(0, 200_000)}`;
 
   const resp = await ai.models.generateContent({
-    model: "gemini-2.0-flash",
+    model: process.env.GOOGLE_AI_MODEL ?? "gemini-2.5-flash-preview-04-17",
     contents: [{ role: "user", parts: [{ text: prompt }] }],
   });
 
