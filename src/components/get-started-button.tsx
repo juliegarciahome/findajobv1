@@ -1,6 +1,6 @@
 "use client";
 
-import { signIn, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -20,7 +20,7 @@ export function GetStartedButton() {
     if (status === "authenticated") {
       router.push("/pipeline");
     } else {
-      void signIn("google", { callbackUrl: "/pipeline" });
+      router.push("/onboarding");
     }
   }
 

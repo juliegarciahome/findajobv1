@@ -14,20 +14,21 @@ type GreenhouseJob = {
   updated_at: string;
 };
 
-function matchesFilter(title: string): boolean {
+function matchesFilter(title: string, extraKeywords: string[] = []): boolean {
   const t = title.toLowerCase();
-  const hasPositive = TITLE_FILTERS.positive.some((kw) => t.includes(kw.toLowerCase()));
+  const positive = [...TITLE_FILTERS.positive, ...extraKeywords];
+  const hasPositive = positive.some((kw) => t.includes(kw.toLowerCase()));
   const hasNegative = TITLE_FILTERS.negative.some((kw) => t.includes(kw.toLowerCase()));
   return hasPositive && !hasNegative;
 }
 
-async function scanGreenhouseApi(apiUrl: string, company: string): Promise<JobResult[]> {
+async function scanGreenhouseApi(apiUrl: string, company: string, extraKeywords: string[] = []): Promise<JobResult[]> {
   try {
     const res = await fetch(apiUrl, { next: { revalidate: 0 } });
     if (!res.ok) return [];
     const data = (await res.json()) as { jobs: GreenhouseJob[] };
     return (data.jobs ?? [])
-      .filter((j) => matchesFilter(j.title))
+      .filter((j) => matchesFilter(j.title, extraKeywords))
       .slice(0, 20)
       .map((j) => ({
         title: j.title,
@@ -53,6 +54,7 @@ export type JobResult = {
 
 const reqSchema = z.object({
   categories: z.array(z.string()).optional(),
+  keywords: z.array(z.string()).optional(),
   limit: z.number().int().min(1).max(500).optional().default(100),
 });
 
@@ -69,12 +71,14 @@ export async function POST(req: NextRequest) {
 
   const results: JobResult[] = [];
 
+  const extraKeywords = body.keywords ?? [];
+
   // Run Greenhouse API calls in parallel batches of 5
   const BATCH = 5;
   for (let i = 0; i < portals.length; i += BATCH) {
     const batch = portals.slice(i, i + BATCH);
     const batchResults = await Promise.allSettled(
-      batch.map((p) => scanGreenhouseApi(p.api!, p.name))
+      batch.map((p) => scanGreenhouseApi(p.api!, p.name, extraKeywords))
     );
     for (const r of batchResults) {
       if (r.status === "fulfilled") results.push(...r.value);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { apiFetch } from "@/lib/api";
 import { useTenantEmail } from "@/lib/client-tenant";
 import { PORTALS } from "@/data/portals";
+import { Sparkles } from "lucide-react";
 
 type JobResult = {
   title: string;
@@ -33,25 +34,51 @@ type ScanResult = {
   categories: string[];
 };
 
-const CATEGORIES = [...new Set(PORTALS.map((p) => p.category))];
+const HARDCODED_CATEGORIES = [...new Set(PORTALS.map((p) => p.category))];
+
+function loadResumeKeywords(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem("careerPortal.resumeKeywords");
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (Array.isArray(parsed)) return parsed.filter((k): k is string => typeof k === "string");
+  } catch {
+    // ignore
+  }
+  return [];
+}
 
 export default function ScanPage() {
   const { tenantEmail } = useTenantEmail();
   const [result, setResult] = useState<ScanResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [ingestingUrls, setIngestingUrls] = useState<Set<string>>(new Set());
   const [ingestedUrls, setIngestedUrls] = useState<Set<string>>(new Set());
   const [view, setView] = useState<"jobs" | "portals">("jobs");
+  const [resumeKeywords, setResumeKeywords] = useState<string[]>([]);
+
+  // Load resume keywords from localStorage on mount
+  useEffect(() => {
+    setResumeKeywords(loadResumeKeywords());
+  }, []);
+
+  const usingResumeKeywords = resumeKeywords.length > 0;
+  const filterOptions = usingResumeKeywords ? resumeKeywords : HARDCODED_CATEGORIES;
 
   async function scan() {
     setLoading(true);
     try {
+      const body = usingResumeKeywords
+        ? { keywords: selectedFilters.length > 0 ? selectedFilters : resumeKeywords }
+        : { categories: selectedFilters };
+
       const res = await apiFetch("/api/jobs/scan", {
         tenantEmail,
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ categories: selectedCategories }),
+        body: JSON.stringify(body),
       });
       if (res.ok) {
         setResult(await res.json() as ScanResult);
@@ -93,14 +120,24 @@ export default function ScanPage() {
     }
   }
 
-  function toggleCategory(cat: string) {
-    setSelectedCategories((s) =>
-      s.includes(cat) ? s.filter((c) => c !== cat) : [...s, cat]
+  function toggleFilter(f: string) {
+    setSelectedFilters((s) =>
+      s.includes(f) ? s.filter((c) => c !== f) : [...s, f]
     );
   }
 
   const sourceLabel = (s: string) =>
     s === "greenhouse_api" ? "Greenhouse API" : s === "playwright" ? "Playwright" : "Web Search";
+
+  const scanDescription = () => {
+    if (usingResumeKeywords) {
+      if (selectedFilters.length === 0) return `Scanning with all your resume keywords`;
+      return `Scanning for: ${selectedFilters.join(", ")}`;
+    }
+    return selectedFilters.length === 0
+      ? "Scanning all categories (Greenhouse API portals only for live scan)"
+      : `Scanning: ${selectedFilters.join(", ")}`;
+  };
 
   return (
     <AppShell
@@ -109,32 +146,48 @@ export default function ScanPage() {
       backLink={{ href: "/dashboard", label: "Back to dashboard" }}
     >
       <div className="space-y-6">
-        {/* Category filter */}
+        {/* Filter card */}
         <Card className="rounded-2xl">
-          <CardHeader><CardTitle>Filter by Category</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              {usingResumeKeywords ? (
+                <>
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  Your Resume Keywords
+                </>
+              ) : (
+                "Filter by Category"
+              )}
+            </CardTitle>
+            {usingResumeKeywords && (
+              <p className="text-xs text-muted-foreground -mt-1">
+                Extracted by AI from your uploaded resume. Click to filter, or scan all.
+              </p>
+            )}
+          </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2 mb-4">
-              {CATEGORIES.map((cat) => (
+              {filterOptions.map((f) => (
                 <Badge
-                  key={cat}
-                  variant={selectedCategories.includes(cat) ? "default" : "outline"}
-                  className="cursor-pointer select-none"
-                  onClick={() => toggleCategory(cat)}
+                  key={f}
+                  variant={selectedFilters.includes(f) ? "default" : "outline"}
+                  className={`cursor-pointer select-none transition-all ${
+                    usingResumeKeywords && !selectedFilters.includes(f)
+                      ? "hover:border-primary/50 hover:bg-primary/10"
+                      : ""
+                  }`}
+                  onClick={() => toggleFilter(f)}
                 >
-                  {cat}
+                  {f}
                 </Badge>
               ))}
-              {selectedCategories.length > 0 && (
-                <Button size="sm" variant="ghost" onClick={() => setSelectedCategories([])}>
+              {selectedFilters.length > 0 && (
+                <Button size="sm" variant="ghost" onClick={() => setSelectedFilters([])}>
                   Clear
                 </Button>
               )}
             </div>
-            <p className="text-xs text-muted-foreground mb-4">
-              {selectedCategories.length === 0
-                ? "Scanning all categories (Greenhouse API portals only for live scan)"
-                : `Scanning: ${selectedCategories.join(", ")}`}
-            </p>
+            <p className="text-xs text-muted-foreground mb-4">{scanDescription()}</p>
             <Button onClick={() => void scan()} disabled={loading}>
               {loading ? "Scanning…" : "Scan Portals"}
             </Button>
@@ -238,7 +291,7 @@ export default function ScanPage() {
                 <p className="text-xs text-muted-foreground">Web search</p>
               </div>
               <div>
-                <p className="text-2xl font-bold">{CATEGORIES.length}</p>
+                <p className="text-2xl font-bold">{HARDCODED_CATEGORIES.length}</p>
                 <p className="text-xs text-muted-foreground">Categories</p>
               </div>
             </div>

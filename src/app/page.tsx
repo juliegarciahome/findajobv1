@@ -21,7 +21,7 @@ export default function Home() {
             Let AI get you <span className="text-primary text-glow">hired.</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-            I'm your AI Job Search Assistant, I find you the perfect jobs, tailor your resume, submit the applications, track your progress, I get you hired!
+            I'm your AI Job Search Assistant, I find you jobs, tailor your resume, submit the applications, track your progress, I get you hired!
           </p>
 
           {/* CTA + Quick Links */}
